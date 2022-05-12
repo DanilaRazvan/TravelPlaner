@@ -1,0 +1,19 @@
+<resources>
+    <string name="app_name">TravelPlaner</string>
+
+    <string name="log_in">Log In</string>
+    <string name="sign_up">Sign up</string>
+    <string name="password">Password</string>
+    <string name="username">Username</string>
+    <string name="not_supported">Not supported yet.</string>
+    <string name="login_empty_username_message">Please enter an username</string>
+    <string name="login_empty_password_message">Please enter a password</string>
+    <string name="login_invalid_credentials_message">Username and/or password are incorrect</string>
+    <string name="login_unknown_error">Unknown error occurred. Please try again later</string>
+    <string name="no_internet_connection_error_message">Please check your internet connection and try again</string>
+    <string name="timeout_error_message">Slow internet connection. Please try again</string>
+
+    <string name="search_destination_label">Destination</string>
+    <string name="explore_by_destination">Explore by destination</string>
+    <string name="our_recommendations">Our Recommendations</string>
+</resources>
