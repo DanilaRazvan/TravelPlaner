@@ -6,6 +6,8 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -51,6 +53,14 @@ fun LoginScreenContent(
                 .fillMaxWidth()
                 .weight(.4f)
         )
+
+        if (viewState is LoginViewState.SubmissionError) {
+            Text(
+                text = viewState.errorMessage.asString(),
+                color = MaterialTheme.colors.error,
+            )
+        }
+
         ActionsArea(
             modifier = Modifier
                 .fillMaxWidth()
