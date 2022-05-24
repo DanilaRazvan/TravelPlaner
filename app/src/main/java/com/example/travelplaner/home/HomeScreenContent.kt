@@ -1,8 +1,10 @@
 package com.example.travelplaner.home
 
+import android.app.DatePickerDialog
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.*
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -13,6 +15,7 @@ import androidx.compose.material.*
 import androidx.compose.material.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.runtime.*
@@ -24,6 +27,7 @@ import androidx.compose.ui.focus.FocusManager
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -39,7 +43,10 @@ import com.example.travelplaner.core.ui.model.TpListItemUiModel
 import com.example.travelplaner.core.ui.theme.BottomSheetShape
 import com.example.travelplaner.core.ui.theme.ButtonShape
 import com.example.travelplaner.core.ui.theme.tp_divider_color
+import com.example.travelplaner.utils.asSimpleString
 import kotlinx.coroutines.launch
+import java.time.Instant
+import java.util.*
 
 private enum class DrawerEntry {
     Favorites, Settings
@@ -182,6 +189,42 @@ private fun HomeContent(
 ) {
     val focusManager = LocalFocusManager.current
 
+    val context = LocalContext.current
+    var from by remember { mutableStateOf<Date?>(null) }
+    var to by remember { mutableStateOf<Date?>(null) }
+    val fromCalendar = remember { Calendar.getInstance() }
+    from?.let { fromCalendar.time = it }
+    val toCalendar = remember { Calendar.getInstance() }
+    to?.let { toCalendar.time = it }
+    val fromDatePickerDialog = remember {
+        DatePickerDialog(
+            context,
+            { _, year, month, day ->
+                fromCalendar.set(year, month, day)
+                from = fromCalendar.time
+
+                viewModel.onFromDateChanged(fromCalendar.timeInMillis)
+            },
+            fromCalendar.get(Calendar.YEAR),
+            fromCalendar.get(Calendar.MONTH),
+            fromCalendar.get(Calendar.DAY_OF_MONTH),
+        )
+    }
+    val toDatePickerDialog = remember {
+        DatePickerDialog(
+            context,
+            { _, year, month, day ->
+                toCalendar.set(year, month, day)
+                to = toCalendar.time
+
+                viewModel.onToDateChanged(toCalendar.timeInMillis)
+            },
+            toCalendar.get(Calendar.YEAR),
+            toCalendar.get(Calendar.MONTH),
+            toCalendar.get(Calendar.DAY_OF_MONTH),
+        )
+    }
+
     Box(modifier = modifier) {
         BackdropScaffold(
             modifier = Modifier.fillMaxSize(),
@@ -212,9 +255,14 @@ private fun HomeContent(
                     BackLayerContent(
                         isLoading = isLoading,
                         searchText = searchText,
+                        from = from,
+                        showFromDialog = { fromDatePickerDialog.show() },
+                        to = to,
+                        showToDialog = { toDatePickerDialog.show() },
                         onSearchTextChanged = onSearchTextChanged,
                         onSearchByDestination = onSearchByDestination,
-                        focusManager = focusManager
+                        focusManager = focusManager,
+                        areDateFiltersVisible = selectedScreen != HomeScreen.Visit
                     )
                 }
             },
@@ -275,45 +323,92 @@ private fun DeveloperBackLayerContent(
 private fun BackLayerContent(
     isLoading: Boolean,
     searchText: String,
+    from: Date?,
+    showFromDialog: () -> Unit,
+    to: Date?,
+    showToDialog: () -> Unit,
     onSearchTextChanged: (String) -> Unit,
     onSearchByDestination: () -> Unit,
-    focusManager: FocusManager
+    focusManager: FocusManager,
+    areDateFiltersVisible: Boolean
 ) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 24.dp, vertical = 12.dp)
     ) {
-        TpTextField(
-            modifier = Modifier.fillMaxWidth(),
-            enabled = !isLoading,
-            value = searchText,
-            onValueChanged = onSearchTextChanged,
-            labelText = stringResource(id = R.string.search_destination_label),
-            maxLines = 1,
-            keyboardOptions = KeyboardOptions(
-                imeAction = ImeAction.Search
-            ),
-            keyboardActions = KeyboardActions(
-                onSearch = {
-                    onSearchByDestination()
-                    focusManager.clearFocus()
-                }
-            ),
-            trailingIcon = {
-                IconButton(
-                    onClick = {
-                        onSearchTextChanged("")
+        Column(modifier = Modifier.fillMaxWidth()) {
+            TpTextField(
+                modifier = Modifier.fillMaxWidth(),
+                enabled = !isLoading,
+                value = searchText,
+                onValueChanged = onSearchTextChanged,
+                labelText = stringResource(id = R.string.search_destination_label),
+                maxLines = 1,
+                keyboardOptions = KeyboardOptions(
+                    imeAction = ImeAction.Search
+                ),
+                keyboardActions = KeyboardActions(
+                    onSearch = {
+                        onSearchByDestination()
                         focusManager.clearFocus()
                     }
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Clear,
-                        contentDescription = "clear"
-                    )
+                ),
+                trailingIcon = {
+                    IconButton(
+                        onClick = {
+                            onSearchTextChanged("")
+                            focusManager.clearFocus()
+                        }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Clear,
+                            contentDescription = "clear"
+                        )
+                    }
                 }
+            )
+            if (areDateFiltersVisible) {
+                TpTextField(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable(
+                            interactionSource = MutableInteractionSource(),
+                            indication = null,
+                            onClick = showFromDialog
+                        ),
+                    labelText = "From",
+                    value = from?.asSimpleString() ?: "",
+                    readOnly = true,
+                    enabled = false,
+                    singleLine = true,
+                    maxLines = 1,
+                    trailingIcon = {
+                        Icon(imageVector = Icons.Default.DateRange, contentDescription = "calendar", tint = Color.White)
+                    }
+                )
             }
-        )
+            if (areDateFiltersVisible) {
+                TpTextField(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable(
+                            interactionSource = MutableInteractionSource(),
+                            indication = null,
+                            onClick = showToDialog
+                        ),
+                    labelText = "To",
+                    value = to?.asSimpleString() ?: "",
+                    readOnly = true,
+                    enabled = false,
+                    singleLine = true,
+                    maxLines = 1,
+                    trailingIcon = {
+                        Icon(imageVector = Icons.Default.DateRange, contentDescription = "calendar", tint = Color.White)
+                    }
+                )
+            }
+        }
     }
 }
 
@@ -474,6 +569,18 @@ private fun ExploreItem(
                 text = item.city + if (item.country.isNotBlank()) ", ${item.country}" else "",
                 style = MaterialTheme.typography.h6
             )
+            Spacer(Modifier.height(8.dp))
+            if (item.from != null && item.to != null) {
+
+                val fromDate = Date.from(Instant.ofEpochMilli(item.from)).asSimpleString()
+                val toDate = Date.from(Instant.ofEpochMilli(item.to)).asSimpleString()
+                Text(
+                    text = "$fromDate - $toDate",
+                    maxLines = 4,
+                    overflow = TextOverflow.Ellipsis,
+                    style = MaterialTheme.typography.caption.copy(color = Color.White)
+                )
+            }
             Spacer(Modifier.height(8.dp))
             Text(
                 text = item.details,

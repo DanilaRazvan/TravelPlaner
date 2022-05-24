@@ -5,7 +5,9 @@ data class TpListItemUiModel(
     val imageUrl: String,
     val city: String,
     val country: String = "",
-    val details: String
+    val details: String,
+    val from: Long? = null,
+    val to: Long? = null
 )
 
 data class LandmarkUiModel(

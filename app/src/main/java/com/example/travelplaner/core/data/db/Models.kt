@@ -17,6 +17,9 @@ data class Flight(
     @ColumnInfo(name = "ticket_price") val ticketPrice: String,
     @ColumnInfo(name = "duration") val duration: String,
     @ColumnInfo(name = "to_city_id") val toCityId: Long,
+    @ColumnInfo(name = "description") val description: String,
+    @ColumnInfo(name = "from") val from: Long,
+    @ColumnInfo(name = "to") val to: Long,
 )
 
 @Entity(tableName = "accommodations")
@@ -26,6 +29,8 @@ data class Accommodation(
     @ColumnInfo(name = "description") val description: String,
     @ColumnInfo(name = "accommodation_photo_url") val photoUrl: String,
     @ColumnInfo(name = "city_id") val cityId: Long,
+    @ColumnInfo(name = "from") val from: Long,
+    @ColumnInfo(name = "to") val to: Long,
 )
 
 @Entity(tableName = "landmarks")

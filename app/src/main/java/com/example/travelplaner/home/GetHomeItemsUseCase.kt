@@ -10,6 +10,8 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
+// TODO: FILTERS
+
 class GetHomeItemsUseCase @Inject constructor(
     private val dispatchers: AppCoroutineDispatchers,
     private val cityDao: CityDao,
@@ -18,86 +20,183 @@ class GetHomeItemsUseCase @Inject constructor(
     private val appDataRepository: AppDataRepository
 ) {
     suspend operator fun invoke(
-        searchByDestinationFlow: SharedFlow<String>
+        searchByDestinationFlow: SharedFlow<String>,
+        searchByFromDateFlow: SharedFlow<Long?>,
+        searchByToDateFlow: SharedFlow<Long?>,
     ): Flow<GetHomeItemsResult> = withContext(dispatchers.io) {
 
         val citiesFlow = combine(
-            cityDao.readAllFlow()
-                .map { cities ->
-                    cities.map { city ->
-                        TpListItemUiModel(
-                            id = city.id,
-                            imageUrl = city.photoUrl,
-                            city = city.name,
-                            country = city.country,
-                            details = city.description
-                        )
-                    }
-                },
+            cityDao.readAllFlow(),
             searchByDestinationFlow
                 .onSubscription { emit("") },
             appDataRepository.getEditMode(),
         ) { cities, searchText, isEditModeEnabled ->
-            if (isEditModeEnabled || (!isEditModeEnabled && searchText.isBlank())) {
-                cities
-            } else {
-                cities.filter { model ->
-                    model.city.lowercase().contains(searchText.lowercase()) ||
-                            model.country.lowercase().contains(searchText.lowercase())
+            val filteredCities =
+                if (isEditModeEnabled || (!isEditModeEnabled && searchText.isBlank())) {
+                    cities
+                } else {
+                    cities.filter { model ->
+                        model.name.lowercase().contains(searchText.lowercase()) ||
+                                model.country.lowercase().contains(searchText.lowercase())
+                    }
                 }
+
+            filteredCities.map { city ->
+                TpListItemUiModel(
+                    id = city.id,
+                    imageUrl = city.photoUrl,
+                    city = city.name,
+                    country = city.country,
+                    details = city.description
+                )
             }
         }
+
         val flightsFlow = combine(
-            flightDao.readAllFlow()
-                .map { flights ->
-                    flights.map { entity ->
-                        TpListItemUiModel(
-                            id = entity.flight.id,
-                            imageUrl = entity.city.photoUrl,
-                            city = entity.city.name,
-                            country = entity.city.country,
-                            details = "${entity.flight.ticketPrice} - ${entity.flight.duration}"
-                        )
-                    }
-                },
+            flightDao.readAllFlow(),
             searchByDestinationFlow
                 .onSubscription { emit("") },
+            searchByFromDateFlow
+                .onSubscription { emit(null) },
+            searchByToDateFlow
+                .onSubscription { emit(null) },
             appDataRepository.getEditMode(),
-        ) { flights, searchText, isEditModeEnabled ->
-            if (isEditModeEnabled || (!isEditModeEnabled && searchText.isBlank())) {
-                flights
-            } else {
-                flights.filter { model ->
-                    model.city.lowercase().contains(searchText.lowercase()) ||
-                            model.country.lowercase().contains(searchText.lowercase())
+        ) { flights, searchText, from: Long?, to: Long?, isEditModeEnabled ->
+
+            val filteredFlights = if (isEditModeEnabled) flights
+            else {
+                when {
+                    searchText.isNotBlank() && from != null && to != null -> flights
+                        .filter { model ->
+                            model.city.name.contains(searchText.lowercase()) || model.city.country.lowercase()
+                                .contains(searchText.lowercase()) &&
+                                    model.flight.from <= from &&
+                                    model.flight.to >= to
+                        }
+
+                    searchText.isNotBlank() && from != null -> flights
+                        .filter { model ->
+                            model.city.name.contains(searchText.lowercase()) || model.city.country.lowercase()
+                                .contains(searchText.lowercase()) &&
+                                    model.flight.from >= from
+                        }
+
+                    searchText.isNotBlank() && to != null -> flights
+                        .filter { model ->
+                            model.city.name.contains(searchText.lowercase()) || model.city.country.lowercase()
+                                .contains(searchText.lowercase()) &&
+                                    model.flight.to < to
+                        }
+
+                    from != null && to != null -> flights.filter { model ->
+                        model.flight.from <= from &&
+                                model.flight.to >= to
+                    }
+
+                    searchText.isNotBlank() -> flights
+                        .filter { model ->
+                            model.city.name.contains(searchText.lowercase()) || model.city.country.lowercase()
+                                .contains(searchText.lowercase())
+                        }
+
+                    from != null -> flights
+                        .filter { model ->
+                            model.flight.from >= from
+                        }
+
+                    to != null -> flights
+                        .filter { model ->
+                            model.flight.to < to
+                        }
+
+                    else -> flights
                 }
+            }
+
+            filteredFlights.map { entity ->
+                TpListItemUiModel(
+                    id = entity.flight.id,
+                    imageUrl = entity.city.photoUrl,
+                    city = entity.city.name,
+                    country = entity.city.country,
+                    details = "${entity.flight.ticketPrice} - ${entity.flight.duration}",
+                    from = entity.flight.from,
+                    to = entity.flight.to
+                )
             }
         }
 
         val accommodationsFlow = combine(
-            accommodationDao.readAllFlow()
-                .map { accommodations ->
-                    accommodations.map { entity ->
-                        TpListItemUiModel(
-                            id = entity.accommodation.id,
-                            imageUrl = entity.accommodation.photoUrl,
-                            city = entity.city.name,
-                            country = entity.city.country,
-                            details = entity.accommodation.description
-                        )
-                    }
-                },
+            accommodationDao.readAllFlow(),
             searchByDestinationFlow
                 .onSubscription { emit("") },
+            searchByFromDateFlow
+                .onSubscription { emit(null) },
+            searchByToDateFlow
+                .onSubscription { emit(null) },
             appDataRepository.getEditMode(),
-        ) { accommodations, searchText, isEditModeEnabled ->
-            if (isEditModeEnabled || (!isEditModeEnabled && searchText.isBlank())) {
-                accommodations
-            } else {
-                accommodations.filter { model ->
-                    model.city.lowercase().contains(searchText.lowercase()) ||
-                            model.country.lowercase().contains(searchText.lowercase())
+        ) { accommodations, searchText, from: Long?, to: Long?, isEditModeEnabled ->
+
+            val filteredAccommodations = if (isEditModeEnabled) accommodations
+            else {
+                when {
+                    searchText.isNotBlank() && from != null && to != null -> accommodations
+                        .filter { model ->
+                            model.city.name.contains(searchText.lowercase()) || model.city.country.lowercase()
+                                .contains(searchText.lowercase()) &&
+                                    model.accommodation.from <= from &&
+                                    model.accommodation.to >= to
+                        }
+
+                    searchText.isNotBlank() && from != null -> accommodations
+                        .filter { model ->
+                            model.city.name.contains(searchText.lowercase()) || model.city.country.lowercase()
+                                .contains(searchText.lowercase()) &&
+                                    model.accommodation.from >= from
+                        }
+
+                    searchText.isNotBlank() && to != null -> accommodations
+                        .filter { model ->
+                            model.city.name.contains(searchText.lowercase()) || model.city.country.lowercase()
+                                .contains(searchText.lowercase()) &&
+                                    model.accommodation.to < to
+                        }
+
+                    from != null && to != null -> accommodations.filter { model ->
+                        model.accommodation.from <= from &&
+                                model.accommodation.to >= to
+                    }
+
+                    searchText.isNotBlank() -> accommodations
+                        .filter { model ->
+                            model.city.name.contains(searchText.lowercase()) || model.city.country.lowercase()
+                                .contains(searchText.lowercase())
+                        }
+
+                    from != null -> accommodations
+                        .filter { model ->
+                            model.accommodation.from >= from
+                        }
+
+                    to != null -> accommodations
+                        .filter { model ->
+                            model.accommodation.to < to
+                        }
+
+                    else -> accommodations
                 }
+            }
+
+            filteredAccommodations.map { entity ->
+                TpListItemUiModel(
+                    id = entity.accommodation.id,
+                    imageUrl = entity.accommodation.photoUrl,
+                    city = entity.city.name,
+                    country = entity.city.country,
+                    details = entity.accommodation.description,
+                    from = entity.accommodation.from,
+                    to = entity.accommodation.to
+                )
             }
         }
 

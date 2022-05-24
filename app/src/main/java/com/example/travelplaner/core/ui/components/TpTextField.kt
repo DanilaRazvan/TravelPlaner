@@ -19,7 +19,7 @@ import com.example.travelplaner.core.ui.theme.TextFieldShape
 fun TpTextField(
     modifier: Modifier = Modifier,
     value: String,
-    onValueChanged: (String) -> Unit,
+    onValueChanged: (String) -> Unit = {},
     maxLines: Int = Int.MAX_VALUE,
     singleLine: Boolean = false,
     readOnly: Boolean = false,
@@ -46,13 +46,14 @@ fun TpTextField(
 
     val colors = TextFieldDefaults.outlinedTextFieldColors(
         textColor = Color.White,
-        disabledTextColor = Color.White.copy(alpha = .7f),
+        disabledTextColor = Color.White,
         focusedBorderColor = Color.White,
+        unfocusedBorderColor = Color.White,
+        disabledBorderColor = Color.White,
         focusedLabelColor = Color.White,
-        unfocusedBorderColor = Color.White.copy(alpha = .7f),
-        unfocusedLabelColor = Color.White.copy(alpha = .7f),
+        unfocusedLabelColor = Color.White,
+        disabledLabelColor = Color.White,
         cursorColor = Color.White,
-
     )
 
     Column {

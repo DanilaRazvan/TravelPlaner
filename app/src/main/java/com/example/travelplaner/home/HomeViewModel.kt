@@ -38,6 +38,16 @@ class HomeViewModel @Inject constructor(
             pendingActions.emit(HomeEvent.SearchTextChanged(it))
         }
     }
+    val onFromDateChanged: (Long) -> Unit = {
+        viewModelScope.launch {
+            pendingActions.emit(HomeEvent.FromDateChanged(it))
+        }
+    }
+    val onToDateChanged: (Long) -> Unit = {
+        viewModelScope.launch {
+            pendingActions.emit(HomeEvent.ToDateChanged(it))
+        }
+    }
     val onSearchByDestination: () -> Unit = {
         viewModelScope.launch {
 
@@ -71,23 +81,48 @@ class HomeViewModel @Inject constructor(
             pendingActions.emit(HomeEvent.AddCity(name, country, imageUrl, description))
         }
     }
+
     fun onAddFlight(
         toCityId: Long,
         duration: String,
-        ticketPrice: String
+        ticketPrice: String,
+        description: String,
+        from: Long,
+        to: Long
     ) {
         viewModelScope.launch {
-            pendingActions.emit(HomeEvent.AddFlight(toCityId, ticketPrice, duration))
+            pendingActions.emit(
+                HomeEvent.AddFlight(
+                    toCityId,
+                    ticketPrice,
+                    duration,
+                    from,
+                    to,
+                    description
+                )
+            )
         }
     }
+
     fun onAddAccommodation(
         cityId: Long,
         name: String,
         imageUrl: String,
-        description: String
+        description: String,
+        from: Long,
+        to: Long
     ) {
         viewModelScope.launch {
-            pendingActions.emit(HomeEvent.AddAccommodation(cityId, name, description, imageUrl))
+            pendingActions.emit(
+                HomeEvent.AddAccommodation(
+                    cityId,
+                    name,
+                    description,
+                    imageUrl,
+                    from,
+                    to
+                )
+            )
         }
     }
 
@@ -108,12 +143,24 @@ class HomeViewModel @Inject constructor(
                     .transform {
                         emit(it)
                         if (it.text.isBlank()) {
-                            pendingActions.emit(HomeEvent.SearchByDestination(""))
+                            pendingActions.emit(
+                                HomeEvent.SearchByDestination(
+                                    destination = ""
+                                )
+                            )
                         }
                     },
+                pendingActions.filterIsInstance<HomeEvent.FromDateChanged>(),
+                pendingActions.filterIsInstance<HomeEvent.ToDateChanged>(),
                 getHomeItemsUseCase(
                     pendingActions.filterIsInstance<HomeEvent.SearchByDestination>()
                         .map { it.destination }
+                        .shareIn(viewModelScope, SharingStarted.WhileSubscribed()),
+                    pendingActions.filterIsInstance<HomeEvent.FromDateChanged>()
+                        .map { it.from }
+                        .shareIn(viewModelScope, SharingStarted.WhileSubscribed()),
+                    pendingActions.filterIsInstance<HomeEvent.ToDateChanged>()
+                        .map { it.to }
                         .shareIn(viewModelScope, SharingStarted.WhileSubscribed()),
                 ),
                 pendingActions.filterIsInstance<HomeEvent.ToggleEditMode>()
@@ -140,7 +187,10 @@ class HomeViewModel @Inject constructor(
                                 Flight(
                                     ticketPrice = it.ticketPrice,
                                     duration = it.duration,
-                                    toCityId = it.toCityId
+                                    toCityId = it.toCityId,
+                                    from = it.from,
+                                    to = it.to,
+                                    description = it.description
                                 )
                             )
                         }
@@ -153,7 +203,9 @@ class HomeViewModel @Inject constructor(
                                     name = it.name,
                                     description = it.description,
                                     photoUrl = it.imageUrl,
-                                    cityId = it.cityId
+                                    cityId = it.cityId,
+                                    from = it.from,
+                                    to = it.to
                                 )
                             )
                         }
@@ -181,6 +233,18 @@ class HomeViewModel @Inject constructor(
                     is HomeEvent.SearchTextChanged -> {
                         oldState.copy(
                             searchText = event.text,
+                            isLoading = false
+                        )
+                    }
+                    is HomeEvent.FromDateChanged -> {
+                        oldState.copy(
+                            from = event.from,
+                            isLoading = false
+                        )
+                    }
+                    is HomeEvent.ToDateChanged -> {
+                        oldState.copy(
+                            to = event.to,
                             isLoading = false
                         )
                     }
@@ -216,12 +280,22 @@ data class HomeViewState(
     val flights: List<TpListItemUiModel> = emptyList(),
     val accommodations: List<TpListItemUiModel> = emptyList(),
     val isLoading: Boolean = true,
-    val isEditModeEnabled: Boolean = false
+    val isEditModeEnabled: Boolean = false,
+    val from: Long = 0L,
+    val to: Long = Long.MAX_VALUE
 )
 
 sealed class HomeEvent {
     data class SearchTextChanged(
         val text: String
+    ) : HomeEvent()
+
+    data class FromDateChanged(
+        val from: Long
+    ) : HomeEvent()
+
+    data class ToDateChanged(
+        val to: Long
     ) : HomeEvent()
 
     data class SearchByDestination(
@@ -244,14 +318,19 @@ sealed class HomeEvent {
     data class AddFlight(
         val toCityId: Long,
         val ticketPrice: String,
-        val duration: String
+        val duration: String,
+        val from: Long,
+        val to: Long,
+        val description: String
     ) : HomeEvent()
 
     data class AddAccommodation(
         val cityId: Long,
         val name: String,
         val description: String,
-        val imageUrl: String
+        val imageUrl: String,
+        val from: Long,
+        val to: Long
     ) : HomeEvent()
 
     data class RemoveElement(
