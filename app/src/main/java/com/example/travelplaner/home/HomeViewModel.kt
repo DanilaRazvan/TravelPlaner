@@ -38,12 +38,12 @@ class HomeViewModel @Inject constructor(
             pendingActions.emit(HomeEvent.SearchTextChanged(it))
         }
     }
-    val onFromDateChanged: (Long) -> Unit = {
+    val onFromDateChanged: (Long?) -> Unit = {
         viewModelScope.launch {
             pendingActions.emit(HomeEvent.FromDateChanged(it))
         }
     }
-    val onToDateChanged: (Long) -> Unit = {
+    val onToDateChanged: (Long?) -> Unit = {
         viewModelScope.launch {
             pendingActions.emit(HomeEvent.ToDateChanged(it))
         }
@@ -238,13 +238,13 @@ class HomeViewModel @Inject constructor(
                     }
                     is HomeEvent.FromDateChanged -> {
                         oldState.copy(
-                            from = event.from,
+                            from = event.from ?: 0L,
                             isLoading = false
                         )
                     }
                     is HomeEvent.ToDateChanged -> {
                         oldState.copy(
-                            to = event.to,
+                            to = event.to ?: Long.MAX_VALUE,
                             isLoading = false
                         )
                     }
@@ -291,11 +291,11 @@ sealed class HomeEvent {
     ) : HomeEvent()
 
     data class FromDateChanged(
-        val from: Long
+        val from: Long?
     ) : HomeEvent()
 
     data class ToDateChanged(
-        val to: Long
+        val to: Long?
     ) : HomeEvent()
 
     data class SearchByDestination(

@@ -257,8 +257,16 @@ private fun HomeContent(
                         searchText = searchText,
                         from = from,
                         showFromDialog = { fromDatePickerDialog.show() },
+                        onClearFromDate = {
+                            from = null
+                            viewModel.onFromDateChanged(null)
+                        },
                         to = to,
                         showToDialog = { toDatePickerDialog.show() },
+                        onClearToDate = {
+                            to = null
+                            viewModel.onToDateChanged(null)
+                        },
                         onSearchTextChanged = onSearchTextChanged,
                         onSearchByDestination = onSearchByDestination,
                         focusManager = focusManager,
@@ -325,8 +333,10 @@ private fun BackLayerContent(
     searchText: String,
     from: Date?,
     showFromDialog: () -> Unit,
+    onClearFromDate: () -> Unit,
     to: Date?,
     showToDialog: () -> Unit,
+    onClearToDate: () -> Unit,
     onSearchTextChanged: (String) -> Unit,
     onSearchByDestination: () -> Unit,
     focusManager: FocusManager,
@@ -384,7 +394,25 @@ private fun BackLayerContent(
                     singleLine = true,
                     maxLines = 1,
                     trailingIcon = {
-                        Icon(imageVector = Icons.Default.DateRange, contentDescription = "calendar", tint = Color.White)
+                        if (from == null || from.asSimpleString() == "")
+                            Icon(
+                                imageVector = Icons.Default.DateRange,
+                                contentDescription = "calendar",
+                                tint = Color.White
+                            )
+                        else {
+                            IconButton(
+                                onClick = {
+                                    onClearFromDate()
+                                    focusManager.clearFocus()
+                                }
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Clear,
+                                    contentDescription = "clear"
+                                )
+                            }
+                        }
                     }
                 )
             }
@@ -404,7 +432,25 @@ private fun BackLayerContent(
                     singleLine = true,
                     maxLines = 1,
                     trailingIcon = {
-                        Icon(imageVector = Icons.Default.DateRange, contentDescription = "calendar", tint = Color.White)
+                        if (to == null || to.asSimpleString() == "")
+                            Icon(
+                                imageVector = Icons.Default.DateRange,
+                                contentDescription = "calendar",
+                                tint = Color.White
+                            )
+                        else {
+                            IconButton(
+                                onClick = {
+                                    onClearToDate()
+                                    focusManager.clearFocus()
+                                }
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Clear,
+                                    contentDescription = "clear"
+                                )
+                            }
+                        }
                     }
                 )
             }

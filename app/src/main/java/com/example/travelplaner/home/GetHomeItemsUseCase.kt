@@ -70,27 +70,27 @@ class GetHomeItemsUseCase @Inject constructor(
                         .filter { model ->
                             model.city.name.contains(searchText.lowercase()) || model.city.country.lowercase()
                                 .contains(searchText.lowercase()) &&
-                                    model.flight.from <= from &&
-                                    model.flight.to >= to
+                                    model.flight.from <= to &&
+                                    model.flight.to >= from
                         }
 
                     searchText.isNotBlank() && from != null -> flights
                         .filter { model ->
                             model.city.name.contains(searchText.lowercase()) || model.city.country.lowercase()
                                 .contains(searchText.lowercase()) &&
-                                    model.flight.from >= from
+                                    model.flight.to >= from
                         }
 
                     searchText.isNotBlank() && to != null -> flights
                         .filter { model ->
                             model.city.name.contains(searchText.lowercase()) || model.city.country.lowercase()
                                 .contains(searchText.lowercase()) &&
-                                    model.flight.to < to
+                                    model.flight.from <= to
                         }
 
                     from != null && to != null -> flights.filter { model ->
-                        model.flight.from <= from &&
-                                model.flight.to >= to
+                        model.flight.from <= to &&
+                                model.flight.to >= from
                     }
 
                     searchText.isNotBlank() -> flights
@@ -101,12 +101,12 @@ class GetHomeItemsUseCase @Inject constructor(
 
                     from != null -> flights
                         .filter { model ->
-                            model.flight.from >= from
+                            model.flight.to >= from
                         }
 
                     to != null -> flights
                         .filter { model ->
-                            model.flight.to < to
+                            model.flight.from <= to
                         }
 
                     else -> flights
@@ -144,27 +144,27 @@ class GetHomeItemsUseCase @Inject constructor(
                         .filter { model ->
                             model.city.name.contains(searchText.lowercase()) || model.city.country.lowercase()
                                 .contains(searchText.lowercase()) &&
-                                    model.accommodation.from <= from &&
-                                    model.accommodation.to >= to
+                                    model.accommodation.from <= to &&
+                                    model.accommodation.to >= from
                         }
 
                     searchText.isNotBlank() && from != null -> accommodations
                         .filter { model ->
                             model.city.name.contains(searchText.lowercase()) || model.city.country.lowercase()
                                 .contains(searchText.lowercase()) &&
-                                    model.accommodation.from >= from
+                                    model.accommodation.to >= from
                         }
 
                     searchText.isNotBlank() && to != null -> accommodations
                         .filter { model ->
                             model.city.name.contains(searchText.lowercase()) || model.city.country.lowercase()
                                 .contains(searchText.lowercase()) &&
-                                    model.accommodation.to < to
+                                    model.accommodation.from <= to
                         }
 
                     from != null && to != null -> accommodations.filter { model ->
-                        model.accommodation.from <= from &&
-                                model.accommodation.to >= to
+                        model.accommodation.from <= to &&
+                                model.accommodation.to >= from
                     }
 
                     searchText.isNotBlank() -> accommodations
@@ -175,12 +175,12 @@ class GetHomeItemsUseCase @Inject constructor(
 
                     from != null -> accommodations
                         .filter { model ->
-                            model.accommodation.from >= from
+                            model.accommodation.to >= from
                         }
 
                     to != null -> accommodations
                         .filter { model ->
-                            model.accommodation.to < to
+                            model.accommodation.from <= to
                         }
 
                     else -> accommodations
