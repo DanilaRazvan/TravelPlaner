@@ -63,6 +63,8 @@ fun HomeScreenContent(
     onLogout: () -> Unit,
     onToggleEditMode: () -> Unit,
     onDestinationSelected: (Long) -> Unit,
+    onFlightSelected: (Long) -> Unit,
+    onAccommodationSelected: (Long) -> Unit,
     viewModel: HomeViewModel
 ) {
     val scaffoldState = rememberScaffoldState()
@@ -109,6 +111,8 @@ fun HomeScreenContent(
                 onSearchByDestination = onSearchByDestination,
                 isEditModeEnabled = viewState.isEditModeEnabled,
                 onDestinationSelected = onDestinationSelected,
+                onFlightSelected = onFlightSelected,
+                onAccommodationSelected = onAccommodationSelected,
                 viewModel = viewModel
             )
         }
@@ -185,6 +189,8 @@ private fun HomeContent(
     onSearchByDestination: () -> Unit,
     isEditModeEnabled: Boolean,
     onDestinationSelected: (Long) -> Unit,
+    onFlightSelected: (Long) -> Unit,
+    onAccommodationSelected: (Long) -> Unit,
     viewModel: HomeViewModel
 ) {
     val focusManager = LocalFocusManager.current
@@ -298,6 +304,8 @@ private fun HomeContent(
                             },
                             onDestinationSelected = {
                                 if (selectedScreen == HomeScreen.Visit) onDestinationSelected(it.id)
+                                if (selectedScreen == HomeScreen.Fly) onFlightSelected(it.id)
+                                if (selectedScreen == HomeScreen.Sleep) onAccommodationSelected(it.id)
                             },
                         )
                     }

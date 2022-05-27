@@ -1,7 +1,9 @@
 package com.example.travelplaner.core.data.db
 
 import androidx.room.*
+import kotlinx.serialization.Serializable
 
+@Serializable
 @Entity(tableName = "cities")
 data class City(
     @PrimaryKey(autoGenerate = true) @ColumnInfo(name = "city_id") val id: Long = 0L,
@@ -11,6 +13,7 @@ data class City(
     @ColumnInfo(name = "city_description") val description: String,
 )
 
+@Serializable
 @Entity(tableName = "flights")
 data class Flight(
     @PrimaryKey(autoGenerate = true) @ColumnInfo(name = "flight_id") val id: Long = 0L,
@@ -22,6 +25,7 @@ data class Flight(
     @ColumnInfo(name = "to") val to: Long,
 )
 
+@Serializable
 @Entity(tableName = "accommodations")
 data class Accommodation(
     @PrimaryKey(autoGenerate = true) @ColumnInfo(name = "accommodation_id") val id: Long = 0L,
@@ -33,6 +37,7 @@ data class Accommodation(
     @ColumnInfo(name = "to") val to: Long,
 )
 
+@Serializable
 @Entity(tableName = "landmarks")
 data class Landmark(
     @PrimaryKey(autoGenerate = true) @ColumnInfo(name = "landmark_id") val id: Long = 0L,
@@ -45,6 +50,7 @@ data class Landmark(
     @ColumnInfo(name = "city_id") val cityId: Long,
 )
 
+@Serializable
 @Entity(tableName = "trips")
 data class Trip(
     @PrimaryKey(autoGenerate = true) @ColumnInfo(name = "trip_id") val id: Long = 0L,
@@ -53,12 +59,14 @@ data class Trip(
     @ColumnInfo(name = "total_price") val totalPrice: Float,
 )
 
+@Serializable
 @Entity(tableName = "trips_landmarks", primaryKeys = ["trip_id", "landmark_id"])
 data class TripLandmarkCrossRef(
     @ColumnInfo(name = "trip_id") val tripId: Long,
     @ColumnInfo(name = "landmark_id") val landmarkId: Long
 )
 
+@Serializable
 data class FlightWithCity(
     @Embedded val flight: Flight,
     @Relation(
@@ -68,6 +76,7 @@ data class FlightWithCity(
     val city: City
 )
 
+@Serializable
 data class AccommodationWithCity(
     @Embedded val accommodation: Accommodation,
     @Relation(
@@ -77,6 +86,7 @@ data class AccommodationWithCity(
     val city: City
 )
 
+@Serializable
 data class CityWithLandmarks(
     @Embedded val city: City,
     @Relation(
@@ -86,6 +96,7 @@ data class CityWithLandmarks(
     val landmarks: List<Landmark>
 )
 
+@Serializable
 data class TripWithLandmarks(
     @Embedded val trip: Trip,
     @Relation(

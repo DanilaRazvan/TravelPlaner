@@ -3,6 +3,7 @@ package com.example.travelplaner.core.data.db.dao
 import androidx.room.*
 import com.example.travelplaner.core.data.db.Flight
 import com.example.travelplaner.core.data.db.FlightWithCity
+import com.example.travelplaner.core.data.db.Landmark
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -37,4 +38,11 @@ abstract class FlightDao {
         """
     )
     abstract fun readAllFlow(): Flow<List<FlightWithCity>>
+
+    @Transaction
+    @Query("""
+        select * from  flights
+        where flight_id == :id
+    """)
+    abstract suspend fun readById(id: Long): FlightWithCity
 }

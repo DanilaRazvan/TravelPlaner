@@ -1,5 +1,8 @@
 package com.example.travelplaner.core.ui.model
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 data class TpListItemUiModel(
     val id: Long,
     val imageUrl: String,
