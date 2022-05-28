@@ -1,18 +1,11 @@
 package com.example.travelplaner.home
 
-import android.widget.Toast
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.travelplaner.NavGraphs
-import com.example.travelplaner.R
 import com.example.travelplaner.core.util.collectAsStateWithLifecycle
-import com.example.travelplaner.destinations.AccommodationScreenDestination
-import com.example.travelplaner.destinations.FavoritesScreenDestination
-import com.example.travelplaner.destinations.FlightScreenDestination
-import com.example.travelplaner.destinations.TripDetailsScreenDestination
-import com.example.travelplaner.flight.FlightScreen
+import com.example.travelplaner.destinations.*
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 
@@ -24,18 +17,14 @@ fun HomeScreen(
 ) {
     val viewState by viewModel.viewState.collectAsStateWithLifecycle(initial = HomeViewState())
 
-    val context = LocalContext.current
     HomeScreenContent(
         viewState = viewState,
         onFavoritesClicked = {
             navigator.navigate(FavoritesScreenDestination.route)
         },
         onSettingsClicked = {
-            Toast.makeText(
-                context,
-                context.getString(R.string.not_supported),
-                Toast.LENGTH_SHORT
-            ).show()
+            val route = SettingsScreenDestination().route
+            navigator.navigate(route)
         },
         onSearchTextChanged = viewModel.onSearchTextChanged,
         onScreenChanged = viewModel.onScreenChanged,

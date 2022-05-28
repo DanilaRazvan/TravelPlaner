@@ -120,7 +120,7 @@ private fun FlightImage(
                 .align(Alignment.TopStart)
                 .statusBarsPadding()
                 .padding(top = 16.dp, start = 16.dp)
-                .size(32.dp)
+                .size(48.dp)
                 .clip(ButtonShape)
                 .background(MaterialTheme.colors.surface)
                 .clickable {

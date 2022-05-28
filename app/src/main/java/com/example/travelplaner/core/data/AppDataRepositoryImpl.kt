@@ -11,8 +11,9 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 
-private val PREFERENCE_LOGGED_USER = stringPreferencesKey("logged_user_key")
-private val PREFERENCE_EDIT_MODE = booleanPreferencesKey("edit_mode_key")
+val PREFERENCE_LOGGED_USER = stringPreferencesKey("logged_user_key")
+val PREFERENCE_EDIT_MODE = booleanPreferencesKey("edit_mode_key")
+val PREFERENCE_APP_THEME = stringPreferencesKey("app_theme_key")
 
 class AppDataRepositoryImpl(
     private val dispatchers: AppCoroutineDispatchers,
@@ -50,4 +51,30 @@ class AppDataRepositoryImpl(
                 preference[PREFERENCE_EDIT_MODE] ?: false
             }
     }
+
+    override suspend fun saveAppTheme(theme: AppTheme): Unit = withContext(dispatchers.io) {
+        context.dataStore.edit { preference ->
+            preference[PREFERENCE_APP_THEME] = theme.name
+        }
+    }
+
+    override suspend fun getAppTheme(): Flow<AppTheme> = withContext(dispatchers.io) {
+        context.dataStore.data
+            .map { preference ->
+                when (preference[PREFERENCE_APP_THEME]) {
+                    AppTheme.GREEN.name -> AppTheme.GREEN
+                    AppTheme.PURPLE.name -> AppTheme.PURPLE
+                    AppTheme.ORANGE.name -> AppTheme.ORANGE
+                    AppTheme.BLUE.name -> AppTheme.BLUE
+                    else -> AppTheme.GREEN
+                }
+            }
+    }
+}
+
+enum class AppTheme {
+    GREEN,
+    PURPLE,
+    ORANGE,
+    BLUE;
 }

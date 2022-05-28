@@ -12,4 +12,8 @@ interface AppDataRepository {
     suspend fun toggleEditModePreference()
 
     suspend fun getEditMode() : Flow<Boolean>
+
+    suspend fun saveAppTheme(theme: AppTheme)
+
+    suspend fun getAppTheme(): Flow<AppTheme>
 }
