@@ -5,11 +5,11 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material.Icon
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
+import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -41,55 +41,75 @@ fun FlightScreen(
 
     val flight by viewModel.flight.collectAsStateWithLifecycle(initial = null)
 
-    LazyColumn(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colors.surface)
-            .navigationBarsPadding(),
-        contentPadding = WindowInsets.navigationBars.asPaddingValues(),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-        item {
-            FlightImage(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height((LocalConfiguration.current.screenHeightDp * 0.4).dp),
-                imageUrl = flight?.city?.photoUrl.orEmpty(),
-                onBackPressed = { navigator.navigateUp() }
-            )
-        }
-        item {
-            FlightCityAndPrice(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 24.dp),
-                city = flight?.city?.name.orEmpty(),
-                price = flight?.flight?.ticketPrice.orEmpty()
-            )
-        }
-        item {
-            FlightDescription(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 24.dp),
-                description = Date(flight?.flight?.from ?: 0L).asSimpleString() + " - " + Date(flight?.flight?.to ?: 0L).asSimpleString(),
-            )
-        }
-        item {
-            FlightDescription(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 24.dp),
-                description = flight?.flight?.duration.orEmpty(),
-            )
-        }
-        item {
-            FlightDescription(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 24.dp),
-                description = flight?.flight?.description.orEmpty(),
-            )
+
+    Scaffold(
+        modifier = Modifier.fillMaxSize(),
+        backgroundColor = MaterialTheme.colors.surface,
+        floatingActionButton = {
+            FloatingActionButton(
+                modifier = Modifier.navigationBarsPadding(),
+                onClick = { viewModel.onToggleIsFavorite() }
+            ) {
+                Icon(
+                    imageVector = if (flight?.flight?.isFavorite == true) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                    contentDescription = "fav",
+                    tint = Color.White
+                )
+            }
+        },
+        floatingActionButtonPosition = FabPosition.End
+    ) { innerPadding ->
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .background(MaterialTheme.colors.surface)
+                .navigationBarsPadding(),
+            contentPadding = WindowInsets.navigationBars.asPaddingValues(),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            item {
+                FlightImage(
+                    modifier = Modifier
+                        .fillParentMaxWidth()
+                        .height((LocalConfiguration.current.screenHeightDp * 0.4).dp),
+                    imageUrl = flight?.city?.photoUrl.orEmpty(),
+                    onBackPressed = { navigator.navigateUp() }
+                )
+            }
+            item {
+                FlightCityAndPrice(
+                    modifier = Modifier
+                        .fillParentMaxWidth()
+                        .padding(horizontal = 24.dp),
+                    city = flight?.city?.name.orEmpty(),
+                    price = flight?.flight?.ticketPrice.orEmpty()
+                )
+            }
+            item {
+                FlightDescription(
+                    modifier = Modifier
+                        .fillParentMaxWidth()
+                        .padding(horizontal = 24.dp),
+                    description = Date(flight?.flight?.from ?: 0L).asSimpleString() + " - " + Date(flight?.flight?.to ?: 0L).asSimpleString(),
+                )
+            }
+            item {
+                FlightDescription(
+                    modifier = Modifier
+                        .fillParentMaxWidth()
+                        .padding(horizontal = 24.dp),
+                    description = flight?.flight?.duration.orEmpty(),
+                )
+            }
+            item {
+                FlightDescription(
+                    modifier = Modifier
+                        .fillParentMaxWidth()
+                        .padding(horizontal = 24.dp),
+                    description = flight?.flight?.description.orEmpty(),
+                )
+            }
         }
     }
 }

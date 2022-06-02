@@ -4,6 +4,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.travelplaner.core.util.collectAsStateWithLifecycle
+import com.example.travelplaner.destinations.AccommodationScreenDestination
+import com.example.travelplaner.destinations.FlightScreenDestination
 import com.example.travelplaner.destinations.TripDetailsScreenDestination
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
@@ -24,11 +26,29 @@ fun FavoritesScreen(
             ).route
             navigator.navigate(route)
         },
+        onFlightSelected = { flightId ->
+            val route = FlightScreenDestination(
+                flightId = flightId
+            ).route
+            navigator.navigate(route)
+        },
+        onAccommodationSelected = { accommodationId ->
+            val route = AccommodationScreenDestination(
+                accommodationId = accommodationId
+            ).route
+            navigator.navigate(route)
+        },
         onBackPressed = {
             navigator.navigateUp()
         },
-        onRemoveFromFavorites = { tripId ->
-            viewModel.removeFromFavorites(tripId)
+        onRemoveTripFromFavorites = { tripId ->
+            viewModel.removeTripFromFavorites(tripId)
+        },
+        onRemoveFlightFromFavorites = { flightId ->
+            viewModel.removeFlightFromFavorites(flightId)
+        },
+        onRemoveAccommodationFromFavorites = { accommodationId ->
+            viewModel.removeAccommodationFromFavorites(accommodationId)
         }
     )
 }

@@ -17,9 +17,9 @@ import javax.inject.Inject
 
 @HiltViewModel
 class FlightViewModel @Inject constructor(
-    flightDao: FlightDao,
+    private val flightDao: FlightDao,
     savedStateHandle: SavedStateHandle,
-    dispatchers: AppCoroutineDispatchers
+    private val dispatchers: AppCoroutineDispatchers
 ): ViewModel() {
 
     private val _flight = MutableStateFlow<FlightWithCity?>(null)
@@ -29,11 +29,25 @@ class FlightViewModel @Inject constructor(
         val navArgs = FlightScreenDestination.argsFrom(savedStateHandle)
 
         viewModelScope.launch {
-            val flightWithCity = withContext(dispatchers.io) {
-                flightDao.readById(navArgs.flightId)
+            withContext(dispatchers.io) {
+                flightDao.readByIdFlow(navArgs.flightId)
+                    .collect { newFlight ->
+                        _flight.update {
+                            newFlight
+                        }
+                    }
             }
+        }
+    }
 
-            _flight.update { flightWithCity }
+    fun onToggleIsFavorite() {
+        viewModelScope.launch(dispatchers.io) {
+            val currentAccommodation = _flight.value!!.flight
+            flightDao.update(
+                currentAccommodation.copy(
+                    isFavorite = !currentAccommodation.isFavorite
+                )
+            )
         }
     }
 }

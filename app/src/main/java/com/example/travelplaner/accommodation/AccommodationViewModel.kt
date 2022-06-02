@@ -17,9 +17,9 @@ import javax.inject.Inject
 
 @HiltViewModel
 class AccommodationViewModel @Inject constructor(
-    accommodationDao: AccommodationDao,
+    private val accommodationDao: AccommodationDao,
     savedStateHandle: SavedStateHandle,
-    dispatchers: AppCoroutineDispatchers
+    private val dispatchers: AppCoroutineDispatchers
 ): ViewModel() {
 
     private val _accommodation = MutableStateFlow<AccommodationWithCity?>(null)
@@ -29,11 +29,25 @@ class AccommodationViewModel @Inject constructor(
         val navArgs = AccommodationScreenDestination.argsFrom(savedStateHandle)
 
         viewModelScope.launch {
-            val accommodationWithCity = withContext(dispatchers.io) {
-                accommodationDao.readById(navArgs.accommodationId)
+            withContext(dispatchers.io) {
+                accommodationDao.readByIdFlow(navArgs.accommodationId)
+                    .collect { newAccommodation ->
+                        _accommodation.update {
+                            newAccommodation
+                        }
+                    }
             }
+        }
+    }
 
-            _accommodation.update { accommodationWithCity }
+    fun onToggleIsFavorite() {
+        viewModelScope.launch(dispatchers.io) {
+            val currentAccommodation = _accommodation.value!!.accommodation
+            accommodationDao.update(
+                currentAccommodation.copy(
+                    isFavorite = !currentAccommodation.isFavorite
+                )
+            )
         }
     }
 }
