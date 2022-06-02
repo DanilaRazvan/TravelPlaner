@@ -33,6 +33,13 @@ abstract class AccommodationDao {
     abstract fun deleteByCityId(id: Long)
 
     @Transaction
+    @Query("""
+        select * from accommodations
+        where is_favorite == :isFavorite
+    """)
+    abstract fun readAllByFavoriteFlow(isFavorite: Boolean): Flow<List<AccommodationWithCity>>
+
+    @Transaction
     @Query(
         """
            select * from accommodations
@@ -46,4 +53,11 @@ abstract class AccommodationDao {
         where accommodation_id == :id
     """)
     abstract suspend fun readById(id: Long): AccommodationWithCity
+
+    @Transaction
+    @Query("""
+        select * from  accommodations
+        where accommodation_id == :id
+    """)
+    abstract fun readByIdFlow(id: Long): Flow<AccommodationWithCity>
 }

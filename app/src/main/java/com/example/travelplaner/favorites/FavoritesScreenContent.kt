@@ -17,15 +17,20 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import com.example.travelplaner.core.data.db.Trip
+import com.example.travelplaner.utils.asSimpleString
 import com.example.travelplaner.utils.withDecimals
+import java.util.*
 
 @Composable
 fun FavoritesScreenContent(
     viewState: FavoritesViewState,
     onTripSelected: (Long) -> Unit,
+    onFlightSelected: (Long) -> Unit,
+    onAccommodationSelected: (Long) -> Unit,
     onBackPressed: () -> Unit,
-    onRemoveFromFavorites: (Long) -> Unit
+    onRemoveTripFromFavorites: (Long) -> Unit,
+    onRemoveFlightFromFavorites: (Long) -> Unit,
+    onRemoveAccommodationFromFavorites: (Long) -> Unit
 ) {
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -60,11 +65,41 @@ fun FavoritesScreenContent(
                     .background(MaterialTheme.colors.surface)
                     .navigationBarsPadding(),
                 content = {
-                    items(viewState.trips, key = { it.id }) {
+                    if (viewState.trips.isNotEmpty()) {
+                        stickyHeader { CategoryHeader(name = "Visit") }
+                    }
+                    items(viewState.trips, key = { "trip_${it.id}" }) {
                         FavoritesListItem(
-                            trip = it,
+                            name = it.name,
+                            totalPrice = if (it.totalPrice == 0f) "Free" else "${
+                                it.totalPrice.toDouble().withDecimals(2)
+                            } EUR",
                             onItemSelected = { onTripSelected(it.id) },
-                            onRemoveFromFavorites = { onRemoveFromFavorites(it.id) }
+                            onRemoveFromFavorites = { onRemoveTripFromFavorites(it.id) }
+                        )
+                    }
+                    if (viewState.flights.isNotEmpty()) {
+                        stickyHeader { CategoryHeader(name = "Fly") }
+                    }
+                    items(viewState.flights, key = { "flight_${it.flight.id}" }) {
+                        FavoritesListItem(
+                            name = "${it.city.name}, ${it.city.country}",
+                            totalPrice = it.flight.ticketPrice,
+                            additionalInfo = Date(it.flight.from).asSimpleString() + " - " + Date(it.flight.to).asSimpleString(),
+                            onItemSelected = { onFlightSelected(it.flight.id) },
+                            onRemoveFromFavorites = { onRemoveFlightFromFavorites(it.flight.id) }
+                        )
+                    }
+                    if (viewState.accommodations.isNotEmpty()) {
+                        stickyHeader { CategoryHeader(name = "Sleep") }
+                    }
+                    items(viewState.accommodations, key = { "accommodation_${it.accommodation.id}" }) {
+                        FavoritesListItem(
+                            name = "${it.accommodation.name} - ${it.city.name}, ${it.city.country}",
+                            totalPrice = "",
+                            additionalInfo = Date(it.accommodation.from).asSimpleString() + " - " + Date(it.accommodation.to).asSimpleString(),
+                            onItemSelected = { onAccommodationSelected(it.accommodation.id) },
+                            onRemoveFromFavorites = { onRemoveAccommodationFromFavorites(it.accommodation.id) }
                         )
                     }
                 }
@@ -75,7 +110,9 @@ fun FavoritesScreenContent(
 
 @Composable
 private fun FavoritesListItem(
-    trip: Trip,
+    name: String,
+    totalPrice: String,
+    additionalInfo: String? = null,
     onItemSelected: () -> Unit,
     onRemoveFromFavorites: () -> Unit
 ) {
@@ -96,7 +133,9 @@ private fun FavoritesListItem(
             )
 
             Box(
-                modifier = Modifier.fillMaxSize().padding(end = 24.dp),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(end = 24.dp),
                 contentAlignment = Alignment.CenterEnd
             ) {
                 Icon(
@@ -107,22 +146,44 @@ private fun FavoritesListItem(
             }
         },
         dismissContent = {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
+            Column(
+                modifier = Modifier.fillMaxWidth()
                     .clickable(onClick = onItemSelected)
-                    .padding(horizontal = 24.dp, vertical = 12.dp),
             ) {
-                Text(
-                    text = "${trip.name} - ${
-                        if (trip.totalPrice == 0f) "Free" else "${
-                            trip.totalPrice.toDouble().withDecimals(2)
-                        } EUR"
-                    }",
-                    style = MaterialTheme.typography.h4
-                )
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 24.dp, vertical = 12.dp),
+                ) {
+                    Text(
+                        text = "$name ${if (totalPrice.isNotEmpty()) "- $totalPrice" else ""}",
+                        style = MaterialTheme.typography.h5
+                    )
+                }
+
+                additionalInfo?.let {
+                    Text(
+                        modifier = Modifier
+                            .padding(start = 32.dp, end = 24.dp),
+                        text = additionalInfo,
+                        style = MaterialTheme.typography.h6
+                    )
+                }
             }
         },
         directions = setOf(DismissDirection.EndToStart)
+    )
+}
+
+@Composable
+private fun CategoryHeader(
+    modifier: Modifier = Modifier,
+    name: String
+) {
+    Text(
+        modifier = modifier
+            .padding(horizontal = 24.dp, vertical = 12.dp),
+        text = name,
+        style = MaterialTheme.typography.h4
     )
 }

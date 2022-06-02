@@ -1,6 +1,7 @@
 package com.example.travelplaner.core.data.db.dao
 
 import androidx.room.*
+import com.example.travelplaner.core.data.db.AccommodationWithCity
 import com.example.travelplaner.core.data.db.Flight
 import com.example.travelplaner.core.data.db.FlightWithCity
 import com.example.travelplaner.core.data.db.Landmark
@@ -32,6 +33,13 @@ abstract class FlightDao {
     abstract fun deleteByCityId(id: Long)
 
     @Transaction
+    @Query("""
+        select * from flights
+        where is_favorite == :isFavorite
+    """)
+    abstract fun readAllByFavoriteFlow(isFavorite: Boolean): Flow<List<FlightWithCity>>
+
+    @Transaction
     @Query(
         """
            select * from flights 
@@ -45,4 +53,11 @@ abstract class FlightDao {
         where flight_id == :id
     """)
     abstract suspend fun readById(id: Long): FlightWithCity
+
+    @Transaction
+    @Query("""
+        select * from  flights
+        where flight_id == :id
+    """)
+    abstract fun readByIdFlow(id: Long): Flow<FlightWithCity>
 }
