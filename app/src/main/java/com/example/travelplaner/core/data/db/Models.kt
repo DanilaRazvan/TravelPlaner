@@ -4,6 +4,17 @@ import androidx.room.*
 import kotlinx.serialization.Serializable
 
 @Serializable
+@Entity(
+    tableName = "users",
+    indices = [Index(value = ["username"], unique = true)]
+)
+data class User(
+    @PrimaryKey(autoGenerate = true) @ColumnInfo(name = "user_id") val id: Long = 0L,
+    @ColumnInfo(name = "username") val username: String,
+    @ColumnInfo(name = "password") val password: String
+)
+
+@Serializable
 @Entity(tableName = "cities")
 data class City(
     @PrimaryKey(autoGenerate = true) @ColumnInfo(name = "city_id") val id: Long = 0L,
@@ -23,6 +34,7 @@ data class Flight(
     @ColumnInfo(name = "description") val description: String,
     @ColumnInfo(name = "from") val from: Long,
     @ColumnInfo(name = "to") val to: Long,
+    @ColumnInfo(name = "is_favorite") val isFavorite: Boolean = false,
 )
 
 @Serializable
@@ -35,6 +47,7 @@ data class Accommodation(
     @ColumnInfo(name = "city_id") val cityId: Long,
     @ColumnInfo(name = "from") val from: Long,
     @ColumnInfo(name = "to") val to: Long,
+    @ColumnInfo(name = "is_favorite") val isFavorite: Boolean = false,
 )
 
 @Serializable

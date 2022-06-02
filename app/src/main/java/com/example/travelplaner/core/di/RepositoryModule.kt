@@ -6,6 +6,7 @@ import com.example.travelplaner.core.data.AppDataRepositoryImpl
 import com.example.travelplaner.core.data.db.dao.AccommodationDao
 import com.example.travelplaner.core.data.db.dao.CityDao
 import com.example.travelplaner.core.data.db.dao.FlightDao
+import com.example.travelplaner.core.data.db.dao.UserDao
 import com.example.travelplaner.home.GetHomeItemsUseCase
 import com.example.travelplaner.login.domain.repository.DemoLoginRepository
 import com.example.travelplaner.login.domain.repository.LoginRepository
@@ -24,12 +25,15 @@ object RepositoryModule {
 
     @Provides
     @Singleton
-    fun provideLoginRepository() : LoginRepository = DemoLoginRepository()
+    fun provideLoginRepository(
+        userDao: UserDao
+    ) : LoginRepository = DemoLoginRepository(userDao)
 
     @Provides
     @Singleton
     fun provideAppDataRepository(
         dispatchers: AppCoroutineDispatchers,
-        @ApplicationContext context: Context
-    ) : AppDataRepository = AppDataRepositoryImpl(dispatchers = dispatchers, context = context)
+        @ApplicationContext context: Context,
+        userDao: UserDao
+    ) : AppDataRepository = AppDataRepositoryImpl(dispatchers = dispatchers, context = context, userDao = userDao)
 }

@@ -1,13 +1,18 @@
 package com.example.travelplaner.core.data
 
+import com.example.travelplaner.core.data.db.User
 import kotlinx.coroutines.flow.Flow
 
 interface AppDataRepository {
-    suspend fun saveLoggedUser(username: String)
+    suspend fun saveNewUser(username: String, password: String)
+
+    suspend fun saveLoggedUser(user: User)
+
+    suspend fun removeLoggedUser()
 
     suspend fun removeUser(username: String)
 
-    suspend fun getLoggedUser() : String?
+    suspend fun getLoggedUser() : User?
 
     suspend fun toggleEditModePreference()
 

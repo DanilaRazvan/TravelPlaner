@@ -6,6 +6,8 @@ sealed class LoginResult {
     object Success : LoginResult()
 
     sealed class Failure : LoginResult() {
+        object UserNotFound : Failure()
+
         object InvalidCredentials : Failure()
 
         data class EmptyCredentials(

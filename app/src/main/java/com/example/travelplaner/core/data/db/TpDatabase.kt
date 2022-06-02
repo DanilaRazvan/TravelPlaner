@@ -7,6 +7,7 @@ import com.example.travelplaner.core.data.db.dao.*
 
 @Database(
     entities = [
+        User::class,
         City::class,
         Flight::class,
         Accommodation::class,
@@ -24,4 +25,5 @@ abstract class TpDatabase : RoomDatabase() {
     abstract fun landmarkDao(): LandmarkDao
     abstract fun tripDao(): TripDao
     abstract fun tripsLandmarksDao(): TripsLandmarksDao
+    abstract fun userDao(): UserDao
 }

@@ -21,10 +21,10 @@ import javax.inject.Inject
 class HomeViewModel @Inject constructor(
     dispatchers: AppCoroutineDispatchers,
     getHomeItemsUseCase: GetHomeItemsUseCase,
-    appDataRepository: AppDataRepository,
+    private val appDataRepository: AppDataRepository,
     cityDao: CityDao,
     flightDao: FlightDao,
-    accommodationDao: AccommodationDao,
+    accommodationDao: AccommodationDao
 ) : ViewModel() {
 
     private val initialState = HomeViewState()
@@ -132,6 +132,12 @@ class HomeViewModel @Inject constructor(
     ) {
         viewModelScope.launch {
             pendingActions.emit(HomeEvent.RemoveElement(elementId, selectedScreen))
+        }
+    }
+
+    fun onLogout() {
+        viewModelScope.launch {
+            appDataRepository.removeLoggedUser()
         }
     }
 

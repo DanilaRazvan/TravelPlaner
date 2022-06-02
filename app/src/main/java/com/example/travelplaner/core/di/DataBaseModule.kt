@@ -63,4 +63,8 @@ object DataBaseModule {
     @Provides
     @Singleton
     fun provideTripsLandmarksDao(db: TpDatabase): TripsLandmarksDao = db.tripsLandmarksDao()
+
+    @Provides
+    @Singleton
+    fun provideUserDao(db: TpDatabase): UserDao = db.userDao()
 }

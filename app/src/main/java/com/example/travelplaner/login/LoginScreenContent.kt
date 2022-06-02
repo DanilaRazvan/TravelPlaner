@@ -56,6 +56,7 @@ fun LoginScreenContent(
 
         if (viewState is LoginViewState.SubmissionError) {
             Text(
+                modifier = Modifier.padding(horizontal = 24.dp),
                 text = viewState.errorMessage.asString(),
                 color = MaterialTheme.colors.error,
             )
@@ -82,7 +83,7 @@ fun LoginScreenContent(
 }
 
 @Composable
-private fun AppLogo(
+fun AppLogo(
     modifier: Modifier = Modifier
 ) {
     Box(
@@ -144,7 +145,7 @@ private fun ActionsArea(
 }
 
 @Composable
-private fun UsernameInput(
+fun UsernameInput(
     text: String,
     onTextChanged: (String) -> Unit,
     errorMessage: String?,
@@ -164,7 +165,7 @@ private fun UsernameInput(
 }
 
 @Composable
-private fun PasswordInput(
+fun PasswordInput(
     text: String,
     onTextChanged: (String) -> Unit,
     errorMessage: String?,
@@ -205,7 +206,7 @@ private fun LoginButton(
 }
 
 @Composable
-private fun SignUpButton(
+fun SignUpButton(
     onClick: () -> Unit,
     enabled: Boolean
 ) {

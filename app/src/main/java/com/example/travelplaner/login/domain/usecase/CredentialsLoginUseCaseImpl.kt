@@ -1,5 +1,6 @@
 package com.example.travelplaner.login.domain.usecase
 
+import com.example.travelplaner.core.data.AppDataRepository
 import com.example.travelplaner.core.data.GeneralErrorResult
 import com.example.travelplaner.core.data.GeneralException
 import com.example.travelplaner.core.data.TpResult
@@ -13,6 +14,7 @@ import javax.inject.Inject
 
 class CredentialsLoginUseCaseImpl @Inject constructor(
     private val loginRepository: LoginRepository,
+    private val appDataRepository: AppDataRepository,
     private val dispatchers: AppCoroutineDispatchers,
 ) : CredentialsLoginUseCase {
 
@@ -25,6 +27,7 @@ class CredentialsLoginUseCaseImpl @Inject constructor(
             when (val response = loginRepository.login(credentials)) {
                 is TpResult.Success -> {
                     // store logged user
+                    appDataRepository.saveLoggedUser(response.data.user)
                     LoginResult.Success
                 }
                 is TpResult.Failure -> {
@@ -56,6 +59,7 @@ class CredentialsLoginUseCaseImpl @Inject constructor(
             is LoginException -> {
                 when (response.error) {
                     LoginException.InvalidCredentialsException -> LoginResult.Failure.InvalidCredentials
+                    LoginException.UserNotFound -> LoginResult.Failure.UserNotFound
                 }
             }
 

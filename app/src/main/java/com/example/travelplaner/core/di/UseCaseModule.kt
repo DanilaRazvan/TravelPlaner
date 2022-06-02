@@ -22,10 +22,12 @@ object UseCaseModule {
     @Singleton
     fun provideCredentialsLoginUseCase(
         loginRepository: LoginRepository,
+        appDataRepository: AppDataRepository,
         coroutineDispatchers: AppCoroutineDispatchers,
     ) : CredentialsLoginUseCase = CredentialsLoginUseCaseImpl(
         loginRepository = loginRepository,
-        dispatchers = coroutineDispatchers
+        dispatchers = coroutineDispatchers,
+        appDataRepository = appDataRepository
     )
 
     @Provides

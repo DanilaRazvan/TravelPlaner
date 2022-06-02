@@ -30,6 +30,7 @@ fun HomeScreen(
         onScreenChanged = viewModel.onScreenChanged,
         onSearchByDestination = viewModel.onSearchByDestination,
         onLogout = {
+            viewModel.onLogout()
             navigator.navigate(NavGraphs.root.route) {
                 this.popUpTo(NavGraphs.root.route) {
                     this.inclusive = false

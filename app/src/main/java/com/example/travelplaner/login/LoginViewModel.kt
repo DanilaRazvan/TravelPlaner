@@ -3,6 +3,7 @@ package com.example.travelplaner.login
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.travelplaner.R
+import com.example.travelplaner.core.data.AppDataRepository
 import com.example.travelplaner.core.data.GeneralErrorResult
 import com.example.travelplaner.core.di.AppCoroutineDispatchers
 import com.example.travelplaner.core.ui.UiText
@@ -22,6 +23,7 @@ import javax.inject.Inject
 class LoginViewModel @Inject constructor(
     private val dispatchers: AppCoroutineDispatchers,
     private val credentialsLoginUseCase: CredentialsLoginUseCase,
+    private val appDataRepository: AppDataRepository
 ) : ViewModel() {
 
     private val _viewState = MutableStateFlow<LoginViewState>(LoginViewState.Initial)
@@ -71,6 +73,12 @@ class LoginViewModel @Inject constructor(
         }
     }
 
+    val onSignUp: (String, String) -> Unit = { username, password ->
+        viewModelScope.launch(dispatchers.io) {
+            appDataRepository.saveNewUser(username, password)
+        }
+    }
+
     private fun handleLoginResult(
         loginResult: LoginResult,
         currentCredentials: Credentials
@@ -88,6 +96,12 @@ class LoginViewModel @Inject constructor(
                         LoginViewState.SubmissionError(
                             credentials = currentCredentials,
                             errorMessage = UiText.StringResource(R.string.login_invalid_credentials_message)
+                        )
+                    }
+                    LoginResult.Failure.UserNotFound -> {
+                        LoginViewState.SubmissionError(
+                            credentials = currentCredentials,
+                            errorMessage = UiText.StringResource(R.string.login_user_not_found_message)
                         )
                     }
                     is LoginResult.Failure.General -> {
