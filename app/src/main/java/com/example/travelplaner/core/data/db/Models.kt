@@ -42,25 +42,27 @@ data class Flight(
 data class Accommodation(
     @PrimaryKey(autoGenerate = true) @ColumnInfo(name = "accommodation_id") val id: Long = 0L,
     @ColumnInfo(name = "name") val name: String,
+    @ColumnInfo(name = "city_id") val cityId: Long,
     @ColumnInfo(name = "description") val description: String,
     @ColumnInfo(name = "accommodation_photo_url") val photoUrl: String,
-    @ColumnInfo(name = "city_id") val cityId: Long,
     @ColumnInfo(name = "from") val from: Long,
     @ColumnInfo(name = "to") val to: Long,
     @ColumnInfo(name = "is_favorite") val isFavorite: Boolean = false,
+    @ColumnInfo(name = "additional_photos") val additionalPhotos: List<String>
 )
 
 @Serializable
 @Entity(tableName = "landmarks")
 data class Landmark(
     @PrimaryKey(autoGenerate = true) @ColumnInfo(name = "landmark_id") val id: Long = 0L,
+    @ColumnInfo(name = "city_id") val cityId: Long,
     @ColumnInfo(name = "name") val name: String,
     @ColumnInfo(name = "ticket_price") val ticketPrice: Float,
     @ColumnInfo(name = "landmark_description") val description: String,
     @ColumnInfo(name = "landmark_photo_url") val photoUrl: String,
     @ColumnInfo(name = "from") val from: String,
     @ColumnInfo(name = "until") val until: String,
-    @ColumnInfo(name = "city_id") val cityId: Long,
+    @ColumnInfo(name = "additional_photos") val additionalPhotos: List<String>
 )
 
 @Serializable

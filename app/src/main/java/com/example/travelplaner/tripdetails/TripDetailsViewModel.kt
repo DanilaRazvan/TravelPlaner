@@ -102,7 +102,8 @@ class TripDetailsViewModel @Inject constructor(
                                     description = it.description,
                                     cityId = navArgs.cityId,
                                     from = it.from,
-                                    until = it.until
+                                    until = it.until,
+                                    additionalPhotos = emptyList()
                                 )
                             )
                         }

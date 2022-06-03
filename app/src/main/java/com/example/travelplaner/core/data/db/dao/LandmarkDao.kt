@@ -5,6 +5,7 @@ import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Update
 import com.example.travelplaner.core.data.db.Landmark
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 abstract class LandmarkDao {
@@ -20,6 +21,12 @@ abstract class LandmarkDao {
         where landmark_id == :id
     """)
     abstract suspend fun readById(id: Long): Landmark
+
+    @Query("""
+        select * from  landmarks
+        where landmark_id == :id
+    """)
+    abstract fun readByIdFlow(id: Long): Flow<Landmark>
 
     @Query("""
         delete from landmarks

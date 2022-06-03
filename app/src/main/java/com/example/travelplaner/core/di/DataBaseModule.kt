@@ -4,6 +4,7 @@ import android.content.Context
 import android.os.Debug
 import androidx.room.Room
 import com.example.travelplaner.core.data.db.TpDatabase
+import com.example.travelplaner.core.data.db.TpTypeConverters
 import com.example.travelplaner.core.data.db.dao.*
 import com.squareup.moshi.Moshi
 import dagger.Module
@@ -32,6 +33,7 @@ object DataBaseModule {
         moshi: Moshi
     ): TpDatabase {
         val builder = Room.databaseBuilder(context, TpDatabase::class.java, name)
+            .addTypeConverter(TpTypeConverters(moshi))
             .fallbackToDestructiveMigration()
 
         if (Debug.isDebuggerConnected()) {

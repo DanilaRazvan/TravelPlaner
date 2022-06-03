@@ -18,6 +18,7 @@ import com.example.travelplaner.core.data.db.dao.*
     version = 1,
     exportSchema = false
 )
+@TypeConverters(TpTypeConverters::class)
 abstract class TpDatabase : RoomDatabase() {
     abstract fun cityDao(): CityDao
     abstract fun flightDao(): FlightDao

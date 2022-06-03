@@ -211,7 +211,8 @@ class HomeViewModel @Inject constructor(
                                     photoUrl = it.imageUrl,
                                     cityId = it.cityId,
                                     from = it.from,
-                                    to = it.to
+                                    to = it.to,
+                                    additionalPhotos = emptyList()
                                 )
                             )
                         }

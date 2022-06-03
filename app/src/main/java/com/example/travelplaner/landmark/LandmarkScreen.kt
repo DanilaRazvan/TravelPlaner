@@ -3,29 +3,43 @@ package com.example.travelplaner.landmark
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.rememberImagePainter
 import com.example.travelplaner.core.data.db.Landmark
+import com.example.travelplaner.core.ui.components.TpSecondaryButton
+import com.example.travelplaner.core.ui.components.TpTextField
 import com.example.travelplaner.core.ui.theme.ButtonShape
+import com.example.travelplaner.core.ui.theme.TextFieldShape
 import com.example.travelplaner.core.util.collectAsStateWithLifecycle
+import com.google.accompanist.pager.*
+import com.google.android.material.math.MathUtils.lerp
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
+import kotlin.math.absoluteValue
 
 @Destination(
     navArgsDelegate = LandmarkScreenNavArgs::class
@@ -36,22 +50,94 @@ fun LandmarkScreen(
     navigator: DestinationsNavigator
 ) {
     val viewState by viewModel.viewState.collectAsStateWithLifecycle(initial = null)
+    val editModeEnabled by viewModel.editMode.collectAsStateWithLifecycle(initial = false)
 
-    LandmarkScreenContent(
-        landmark = viewState,
-        onBack = {
-            navigator.navigateUp()
+    var showAddPhotoDialog by remember { mutableStateOf(false) }
+
+    Box(modifier = Modifier.fillMaxSize()) {
+        LandmarkScreenContent(
+            modifier = Modifier.fillMaxSize(),
+            landmark = viewState,
+            onBack = {
+                navigator.navigateUp()
+            },
+            onDeleteImage = {
+                if (editModeEnabled) viewModel.onDeleteImage(it)
+            }
+        )
+
+        if (editModeEnabled) {
+            ExtendedFloatingActionButton(
+                modifier = Modifier
+                    .padding(16.dp)
+                    .navigationBarsPadding()
+                    .align(Alignment.BottomEnd),
+                onClick = { showAddPhotoDialog = true },
+                text = {
+                    Text(text = "Photo")
+                },
+                icon = {
+                    Icon(imageVector = Icons.Default.Add, contentDescription = "add_photo")
+                },
+                contentColor = Color.White
+            )
         }
-    )
+    }
+
+    if (showAddPhotoDialog) {
+        var imageUrl by remember { mutableStateOf("") }
+        val focusManager = LocalFocusManager.current
+
+        Dialog(
+            onDismissRequest = { showAddPhotoDialog = false }
+        ) {
+            Column(
+                modifier = Modifier
+                    .clip(TextFieldShape)
+                    .background(MaterialTheme.colors.surface)
+                    .padding(24.dp),
+            ) {
+                Text(
+                    text = "New photo URL",
+                    color = Color.White,
+                    style = MaterialTheme.typography.h6
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                TpTextField(
+                    modifier = Modifier.fillMaxWidth(),
+                    value = imageUrl,
+                    onValueChanged = { imageUrl = it },
+                    labelText = "Image Url",
+                    keyboardOptions = KeyboardOptions(
+                        imeAction = ImeAction.Done
+                    ),
+                    keyboardActions = KeyboardActions(
+                        onDone = { focusManager.clearFocus() }
+                    ),
+                    maxLines = 1,
+                    singleLine = true
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                TpSecondaryButton(
+                    modifier = Modifier.fillMaxWidth(),
+                    text = "Add",
+                    onClick = { viewModel.addPhoto(imageUrl) },
+                    enabled = true
+                )
+            }
+        }
+    }
 }
 
 @Composable
 private fun LandmarkScreenContent(
+    modifier: Modifier = Modifier,
     landmark: Landmark?,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    onDeleteImage: (String) -> Unit
 ) {
     LazyColumn(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxSize()
             .background(MaterialTheme.colors.surface)
             .navigationBarsPadding(),
@@ -70,22 +156,38 @@ private fun LandmarkScreenContent(
             }
             item {
                 LandmarkNameAndPrice(
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 24.dp),
                     name = it.name,
                     price = it.ticketPrice
                 )
             }
             item {
                 LandmarkHours(
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 24.dp),
                     hours = it.from + " - " + it.until,
                 )
             }
             item {
                 LandmarkDescription(
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 24.dp),
                     description = it.description,
                 )
+            }
+            if (it.additionalPhotos.isNotEmpty()) {
+                item {
+                    AdditionalPhotos(
+                        modifier = Modifier
+                            .fillMaxWidth(),
+                        photos = it.additionalPhotos,
+                        onDeleteImage = onDeleteImage
+                    )
+                }
             }
         }
     }
@@ -185,4 +287,74 @@ private fun LandmarkDescription(
         text = description,
         style = MaterialTheme.typography.caption.copy(color = Color.White)
     )
+}
+
+@OptIn(ExperimentalPagerApi::class)
+@Composable
+private fun AdditionalPhotos(
+    modifier: Modifier = Modifier,
+    photos: List<String>,
+    onDeleteImage: (String) -> Unit
+) {
+    val pagerState = rememberPagerState()
+
+    Column(
+        modifier = modifier
+    ) {
+        HorizontalPager(
+            modifier = Modifier.fillMaxWidth(),
+            count = photos.size,
+            state = pagerState,
+        ) { page ->
+            Image(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .aspectRatio(1f)
+                    .padding(24.dp)
+                    .pointerInput(Unit) {
+                        detectTapGestures(
+                            onDoubleTap = { onDeleteImage(photos[page]) }
+                        )
+                    }
+                    .graphicsLayer {
+                        // Calculate the absolute offset for the current page from the
+                        // scroll position. We use the absolute value which allows us to mirror
+                        // any effects for both directions
+                        val pageOffset = calculateCurrentOffsetForPage(page).absoluteValue
+
+                        // We animate the scaleX + scaleY, between 85% and 100%
+                        lerp(
+                            0.85f,
+                            1f,
+                            1f - pageOffset.coerceIn(0f, 1f)
+                        ).also { scale ->
+                            scaleX = scale
+                            scaleY = scale
+                        }
+
+                        // We animate the alpha, between 50% and 100%
+                        alpha = lerp(
+                            0.5f,
+                            1f,
+                            1f - pageOffset.coerceIn(0f, 1f)
+                        )
+                    },
+                painter = rememberImagePainter(
+                    data = photos[page],
+                    builder = {
+                        crossfade(true)
+                    }
+                ),
+                contentDescription = null,
+                contentScale = ContentScale.Crop
+            )
+        }
+
+        HorizontalPagerIndicator(
+            modifier = Modifier
+                .align(Alignment.CenterHorizontally)
+                .padding(horizontal = 24.dp),
+            pagerState = pagerState
+        )
+    }
 }
