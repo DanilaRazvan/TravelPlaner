@@ -12,6 +12,7 @@ import com.example.travelplaner.core.data.db.dao.FlightDao
 import com.example.travelplaner.core.di.AppCoroutineDispatchers
 import com.example.travelplaner.core.ui.model.TpListItemUiModel
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -50,9 +51,7 @@ class HomeViewModel @Inject constructor(
     }
     val onSearchByDestination: () -> Unit = {
         viewModelScope.launch {
-
-            _viewState.update { it.copy(isLoading = true) }
-
+            delay(100L)
             pendingActions.emit(
                 HomeEvent.SearchByDestination(
                     destination = _viewState.value.searchText
@@ -145,17 +144,7 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch(dispatchers.computation) {
             merge<Any>(
                 pendingActions.filterIsInstance<HomeEvent.ScreenChanged>(),
-                pendingActions.filterIsInstance<HomeEvent.SearchTextChanged>()
-                    .transform {
-                        emit(it)
-                        if (it.text.isBlank()) {
-                            pendingActions.emit(
-                                HomeEvent.SearchByDestination(
-                                    destination = ""
-                                )
-                            )
-                        }
-                    },
+                pendingActions.filterIsInstance<HomeEvent.SearchTextChanged>(),
                 pendingActions.filterIsInstance<HomeEvent.FromDateChanged>(),
                 pendingActions.filterIsInstance<HomeEvent.ToDateChanged>(),
                 getHomeItemsUseCase(

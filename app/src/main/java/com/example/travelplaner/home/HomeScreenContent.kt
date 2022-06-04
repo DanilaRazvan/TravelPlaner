@@ -376,6 +376,7 @@ private fun BackLayerContent(
                     IconButton(
                         onClick = {
                             onSearchTextChanged("")
+                            onSearchByDestination()
                             focusManager.clearFocus()
                         }
                     ) {
